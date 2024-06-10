@@ -42,21 +42,23 @@ public class NotesController {
         return savedNotes;
     }
 
-    @PutMapping("groupId/{groupId}")
-    public List<Notes> updateNotes(@PathVariable Long degreeId, @PathVariable Long groupId, @RequestBody List<Notes> notes) {
-        List<Notes> existingNotes = notesRepository.findTopByGroupIdAndDegreeDegreeIdOrderByVersionDesc(groupId, degreeId, PageRequest.of(0, 1));
-        if (existingNotes.isEmpty()) {
-            throw new RuntimeException("Group not found");
-        }
-
+    @PutMapping("/updateNotes")
+    public List<Notes> updateNotes(@PathVariable Long degreeId, @RequestBody List<Notes> notes) {
         List<Notes> updatedNotes = new ArrayList<>();
         for (Notes note : notes) {
-            Notes existingNote = existingNotes.get(0);
+            Long groupId = note.getGroupId();
 
-            existingNote.setNote(note.getNote());
-            existingNote.setVersion(existingNote.getVersion() + 1);
+            // Use the degreeId from the URL path variable for finding existing notes
+            List<Notes> existingNotes = notesRepository.findTopByGroupIdAndDegreeDegreeIdOrderByVersionDesc(groupId, degreeId, PageRequest.of(0, 1));
+            Notes existingNote = existingNotes.isEmpty() ? new Notes() : existingNotes.get(0);
 
-            updatedNotes.add(notesRepository.save(existingNote));
+            Notes newNote = new Notes();
+            newNote.setDegree(existingNote.getDegree());
+            newNote.setNote(note.getNote());
+            newNote.setVersion(existingNote.getVersion() + 1); // Increment version
+            newNote.setGroupId(groupId);
+
+            updatedNotes.add(notesRepository.save(newNote));
         }
 
         return updatedNotes;
