@@ -17,10 +17,11 @@ public class DocumentTable {
     private Degree degree;
 
     @ManyToOne
-    @JoinColumn(name = "config_table_id")
+    @JoinColumn(name = "document_config_table_id")
     private ConfigTable configTable;
 
     @Lob
+    @Column(name = "document_image", columnDefinition="LONGBLOB")
     private byte[] documentImage;
 
     private String docName;

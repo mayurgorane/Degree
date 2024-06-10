@@ -22,7 +22,7 @@ public class Degree {
     private LocalDate startDate;
 
     @ManyToOne
-    @JoinColumn(name = "config_table_id")
+    @JoinColumn(name = "institute_config_table_id")
     @JsonIgnore
     private ConfigTable configTable;
 
@@ -32,10 +32,12 @@ public class Degree {
     private Users user;
 
 
-//    @OneToMany(mappedBy = "degree", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Notes> notes;
+    @OneToMany(mappedBy = "degree", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Notes> notes;
 
     @OneToOne(mappedBy = "degree", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private DocumentTable document;
 
     public void setDegreeId(Long degreeId) {
@@ -70,9 +72,9 @@ public class Degree {
         this.startDate = startDate;
     }
 
-//    public void setNotes(List<Notes> notes) {
-//        this.notes = notes;
-//    }
+  public void setNotes(List<Notes> notes) {
+        this.notes = notes;
+    }
 
     public void setDocument(DocumentTable document) {
         this.document = document;
@@ -110,9 +112,9 @@ public class Degree {
         return user;
     }
 
-//    public List<Notes> getNotes() {
-//        return notes;
-//    }
+   public List<Notes> getNotes() {
+        return notes;
+    }
 
     public DocumentTable getDocument() {
         return document;

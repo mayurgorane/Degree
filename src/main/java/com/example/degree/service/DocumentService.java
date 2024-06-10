@@ -1,39 +1,63 @@
 package com.example.degree.service;
 
 
+import com.example.degree.entities.ConfigTable;
+import com.example.degree.entities.Degree;
 import com.example.degree.entities.DocumentTable;
+import com.example.degree.entities.Users;
+import com.example.degree.exception.ResourceNotFoundException;
+import com.example.degree.repositories.ConfigTableRepo;
+import com.example.degree.repositories.DegreeRepo;
 import com.example.degree.repositories.DocumentRepo;
+import com.example.degree.repositories.UsersRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.time.LocalDate;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDate;
 @Service
 public class DocumentService {
 
-    private final DocumentRepo documentRepository;
+    @Autowired
+    private DocumentRepo documentTableRepository;
 
     @Autowired
-    public DocumentService(DocumentRepo documentRepository) {
-        this.documentRepository = documentRepository;
+    private UsersRepo userRepository;
+
+    @Autowired
+    private ConfigTableRepo configTableRepository;
+
+    @Autowired
+    private DegreeRepo degreeRepository;
+
+    public DocumentTable saveDocument(String docName, MultipartFile documentImage, Long masterTypeId, String configValue, Long degreeId) throws IOException {
+        Degree degree = degreeRepository.findById(degreeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Degree not found"));
+
+        Users user = degree.getUser();
+
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found for degree with id: " + degreeId);
+        }
+
+        ConfigTable config = configTableRepository.findByMasterTypeIdAndValue(masterTypeId, configValue)
+                .orElseThrow(() -> new ResourceNotFoundException("Config not found"));
+
+        DocumentTable documentTable = new DocumentTable();
+        documentTable.setCreatedBy(user.getUserName()); // Auto-fill userName
+        documentTable.setCreatedDate(LocalDate.now());
+        documentTable.setDocName(docName);
+        documentTable.setDocumentImage(documentImage.getBytes());
+        documentTable.setConfigTable(config);
+        documentTable.setDegree(degree);
+
+        return documentTableRepository.save(documentTable);
+    }
+    public DocumentTable getDocumentById(Long documentId) {
+        return documentTableRepository.findById(documentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Document not found with id: " + documentId));
     }
 
-    public DocumentTable createDocument(DocumentTable document) {
-        document.setCreatedDate(LocalDate.now());
-
-
-        // You may add other business logic or validations here before saving the document
-        return documentRepository.save(document);
-    }
-
-    public DocumentTable updateDocument(DocumentTable document) {
-        // You may add other business logic or validations here before updating the document
-        return documentRepository.save(document);
-    }
-
-    public DocumentTable getDocumentById(Long id) {
-        return documentRepository.findById(id).orElse(null);
-    }
-
-    // You can add more methods as needed for your application
 
 }

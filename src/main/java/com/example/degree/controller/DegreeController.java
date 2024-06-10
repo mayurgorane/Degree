@@ -57,4 +57,12 @@ public class DegreeController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Degree>> getDegreesByUserId(@PathVariable Long userId) {
+        List<Degree> degrees = degreeService.getDegreesByUserId(userId);
+        return ResponseEntity.ok(degrees);
+    }
+
+
 }

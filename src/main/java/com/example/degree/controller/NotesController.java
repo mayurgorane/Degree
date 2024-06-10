@@ -68,4 +68,9 @@ public class NotesController {
     public void deleteNotesByGroupIdAndVersionId(@PathVariable Long degreeId, @PathVariable Long groupId, @PathVariable Long versionId) {
         notesRepository.deleteByGroupIdAndVersionAndDegreeDegreeId(groupId, versionId, degreeId);
     }
+
+    @GetMapping("/groupId/{groupId}")
+    public List<Notes> getNotesByGroupId(@PathVariable Long degreeId, @PathVariable Long groupId) {
+        return notesRepository.findByGroupIdAndDegreeId(groupId, degreeId);
+    }
 }

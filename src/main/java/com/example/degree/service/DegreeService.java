@@ -76,4 +76,10 @@ public class DegreeService {
     public Optional<Degree> getDegreeById(Long id) {
         return degreeRepository.findById(id);
     }
+
+    public List<Degree> getDegreesByUserId(Long userId) {
+        return degreeRepository.findByUserId(userId);
+    }
+
+
 }

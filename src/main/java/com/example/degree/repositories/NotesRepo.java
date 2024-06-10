@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import com.example.degree.entities.Notes;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,4 +23,7 @@ public interface NotesRepo extends JpaRepository<Notes, Long> {
     void deleteByGroupIdAndDegreeDegreeId(Long groupId, Long degreeId);
 
     void deleteByGroupIdAndVersionAndDegreeDegreeId(Long groupId, Long version, Long degreeId);
+
+    @Query("SELECT n FROM Notes n WHERE n.degree.id = :degreeId AND n.groupId = :groupId")
+    List<Notes> findByGroupIdAndDegreeId(@Param("groupId") Long groupId, @Param("degreeId") Long degreeId);
 }

@@ -50,4 +50,15 @@ public class ConfigService {
         configDTO.setValue(configTable.getValue());
         return configDTO;
     }
+
+
+
+
+
+
+
+
+
+
+
 }
