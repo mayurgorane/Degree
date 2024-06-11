@@ -81,5 +81,24 @@ public class DegreeService {
         return degreeRepository.findByUserId(userId);
     }
 
+    public String getConfigTableValueByDegreeId(Long degreeId) {
+        Optional<Degree> degree = degreeRepository.findById(degreeId);
+        return degree.map(value -> value.getConfigTable().getValue()).orElse(null);
+    }
+
+    public String getMasterTypeTypeByDegreeId(Long degreeId) {
+        Optional<Degree> degree = degreeRepository.findById(degreeId);
+        return degree.map(value -> value.getConfigTable().getMasterType().getType()).orElse(null);
+    }
+
+    public boolean deleteDegreeById(Long id) {
+        Optional<Degree> degreeOptional = degreeRepository.findById(id);
+        if (degreeOptional.isPresent()) {
+            degreeRepository.delete(degreeOptional.get());
+            return true;
+        }
+        return false;
+    }
+
 
 }

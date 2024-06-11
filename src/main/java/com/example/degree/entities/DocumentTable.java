@@ -28,6 +28,8 @@ public class DocumentTable {
 
     private String createdBy;
 
+    private LocalDate receivedDate;
+
     public String getCreatedBy() {
         return createdBy;
     }
@@ -82,5 +84,13 @@ public class DocumentTable {
 
     public void setCreatedDate(LocalDate createdDate) {
         this.createdDate = createdDate;
+    }
+
+    public LocalDate getReceivedDate() {
+        return receivedDate;
+    }
+
+    public void setReceivedDate(LocalDate receivedDate) {
+        this.receivedDate = receivedDate;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.degree.controller;
 
+import com.example.degree.dto.DegreeInfo;
 import com.example.degree.entities.Degree;
 import com.example.degree.service.DegreeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ public class DegreeController {
     @Autowired
     private DegreeService degreeService;
 
+    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/userId/{userId}/masterId/{masterId}/value/{value}")
     public ResponseEntity<Degree> createDegree(
             @PathVariable Long userId,
@@ -30,6 +32,7 @@ public class DegreeController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:4200")
     @PutMapping("/{id}/masterId/{masterId}/value/{value}")
     public ResponseEntity<Degree> updateDegree(
             @PathVariable Long id,
@@ -44,24 +47,52 @@ public class DegreeController {
             return ResponseEntity.notFound().build();
         }
     }
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping
     public ResponseEntity<List<Degree>> getAllDegrees() {
         List<Degree> degrees = degreeService.getAllDegrees();
         return ResponseEntity.ok(degrees);
     }
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/{id}")
     public ResponseEntity<Degree> getDegreeById(@PathVariable Long id) {
         return degreeService.getDegreeById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Degree>> getDegreesByUserId(@PathVariable Long userId) {
         List<Degree> degrees = degreeService.getDegreesByUserId(userId);
         return ResponseEntity.ok(degrees);
+    }
+
+
+    @CrossOrigin(origins = "http://localhost:4200")
+    @GetMapping("/{id}/degreeInfo")
+    public ResponseEntity<DegreeInfo> getDegreeInfoByDegreeId(@PathVariable Long id) {
+        String value = degreeService.getConfigTableValueByDegreeId(id);
+        String type = degreeService.getMasterTypeTypeByDegreeId(id);
+
+        if (value != null && type != null) {
+            DegreeInfo degreeInfo = new DegreeInfo();
+            degreeInfo.setValue(value);
+            degreeInfo.setType(type);
+            return ResponseEntity.ok(degreeInfo);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @CrossOrigin(origins = "http://localhost:4200")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDegreeById(@PathVariable Long id) {
+        boolean deleted = degreeService.deleteDegreeById(id);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

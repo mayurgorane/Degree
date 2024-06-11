@@ -22,8 +22,8 @@ public class NotesController {
     @Autowired
     private DegreeRepo degreeRepository;
 
-    @PostMapping
-    public List<Notes> addNotes(@PathVariable Long degreeId, @RequestBody List<Notes> notes) {
+    @PostMapping()
+    public List<Notes> addOrUpdateNotes(@PathVariable Long degreeId, @RequestBody List<Notes> notes) {
         Optional<Degree> degree = degreeRepository.findById(degreeId);
         if (!degree.isPresent()) {
             throw new RuntimeException("Degree not found");
@@ -31,37 +31,30 @@ public class NotesController {
 
         List<Notes> savedNotes = new ArrayList<>();
         for (Notes note : notes) {
-            Long groupId = notesRepository.findMaxGroupIdByDegree(degreeId).orElse(0L) + 1;
+            Long groupId = note.getGroupId();
+            if (groupId == null) {
+                // Generate new groupId and set version to 1 if groupId is not present
+                groupId = notesRepository.findMaxGroupIdByDegree(degreeId).orElse(0L) + 1;
+                note.setVersion(1L);
+            } else {
+                // Increment the version if groupId is present
+                List<Notes> existingNotes = notesRepository.findTopByGroupIdAndDegreeDegreeIdOrderByVersionDesc(groupId, degreeId, PageRequest.of(0, 1));
+                Notes existingNote = existingNotes.isEmpty() ? null : existingNotes.get(0);
+                if (existingNote != null) {
+                    note.setVersion(existingNote.getVersion() + 1);
+                    note.setDegree(existingNote.getDegree());
+                } else {
+                    // Handle the case where the groupId is not found
+                    note.setVersion(1L);
+                }
+            }
 
             note.setDegree(degree.get());
-            note.setVersion(1L);
             note.setGroupId(groupId);
             savedNotes.add(notesRepository.save(note));
         }
 
         return savedNotes;
-    }
-
-    @PutMapping("/updateNotes")
-    public List<Notes> updateNotes(@PathVariable Long degreeId, @RequestBody List<Notes> notes) {
-        List<Notes> updatedNotes = new ArrayList<>();
-        for (Notes note : notes) {
-            Long groupId = note.getGroupId();
-
-            // Use the degreeId from the URL path variable for finding existing notes
-            List<Notes> existingNotes = notesRepository.findTopByGroupIdAndDegreeDegreeIdOrderByVersionDesc(groupId, degreeId, PageRequest.of(0, 1));
-            Notes existingNote = existingNotes.isEmpty() ? new Notes() : existingNotes.get(0);
-
-            Notes newNote = new Notes();
-            newNote.setDegree(existingNote.getDegree());
-            newNote.setNote(note.getNote());
-            newNote.setVersion(existingNote.getVersion() + 1); // Increment version
-            newNote.setGroupId(groupId);
-
-            updatedNotes.add(notesRepository.save(newNote));
-        }
-
-        return updatedNotes;
     }
 
     @DeleteMapping("/group/{groupId}")
