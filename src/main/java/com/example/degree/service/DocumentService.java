@@ -31,7 +31,7 @@ public class DocumentService {
     @Autowired
     private DegreeRepo degreeRepository;
 
-    public DocumentTable saveDocument(String docName, MultipartFile documentImage, Long masterTypeId, String configValue, Long degreeId) throws IOException {
+    public DocumentTable saveDocument(String docName, MultipartFile documentImage, Long masterTypeId, String configValue, Long degreeId,LocalDate receiveDate) throws IOException {
         Degree degree = degreeRepository.findById(degreeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Degree not found"));
 
@@ -44,15 +44,24 @@ public class DocumentService {
         ConfigTable config = configTableRepository.findByMasterTypeIdAndValue(masterTypeId, configValue)
                 .orElseThrow(() -> new ResourceNotFoundException("Config not found"));
 
+       
+        String fileExtension = getFileExtension(documentImage.getOriginalFilename());
+
         DocumentTable documentTable = new DocumentTable();
         documentTable.setCreatedBy(user.getUserName()); // Auto-fill userName
         documentTable.setCreatedDate(LocalDate.now());
-        documentTable.setDocName(docName);
+        documentTable.setDocName(docName + "." + fileExtension); // Append the file extension to the docName
         documentTable.setDocumentImage(documentImage.getBytes());
         documentTable.setConfigTable(config);
         documentTable.setDegree(degree);
+        documentTable.setReceivedDate(receiveDate);
 
         return documentTableRepository.save(documentTable);
+    }
+
+    private String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
     }
     public DocumentTable getDocumentById(Long documentId) {
         return documentTableRepository.findById(documentId)
