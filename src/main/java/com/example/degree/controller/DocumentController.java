@@ -7,6 +7,7 @@ import com.example.degree.exception.ResourceNotFoundException;
 import com.example.degree.service.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,7 +25,7 @@ public class DocumentController {
 
     @Autowired
     private DocumentService documentService;
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/upload")
     public ResponseEntity<DocumentTable> uploadDocument(
             @RequestParam("docName") String docName,
@@ -63,6 +64,15 @@ public class DocumentController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
+   @GetMapping("/degree/{degreeId}")
+    public ResponseEntity<DocumentTable> getDocumentDetailsByDegreeId(@PathVariable Long degreeId) {
+        try {
+            DocumentTable document = documentService.getDocumentDetailsByDegreeId(degreeId);
+            return new ResponseEntity<>(document, HttpStatus.OK);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
 
     private String determineContentType(String fileName) {
         String extension = getFileExtension(fileName).toLowerCase();
@@ -83,4 +93,25 @@ public class DocumentController {
         int dotIndex = fileName.lastIndexOf('.');
         return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
     }
+
+    @CrossOrigin(origins = "http://localhost:4200")
+    @PutMapping("/{degreeId}/update")
+    public ResponseEntity<DocumentTable> updateDocument(
+            @PathVariable Long degreeId,
+            @RequestParam(value = "docName", required = false) String docName,
+            @RequestParam(value = "documentImage", required = false) MultipartFile documentImage,
+            @RequestParam(value = "masterId", required = false) Long masterId,
+            @RequestParam(value = "value", required = false) String value,
+            @RequestParam(value = "receiveDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate receiveDate) {
+        try {
+            DocumentTable updatedDocument = documentService.updateDocument(degreeId, docName, documentImage, masterId, value, receiveDate);
+            return new ResponseEntity<>(updatedDocument, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+
     }

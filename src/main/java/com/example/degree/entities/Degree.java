@@ -32,11 +32,11 @@ public class Degree {
     private Users user;
 
 
-    @OneToMany(mappedBy = "degree", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "degree", cascade = CascadeType.ALL )
     @JsonIgnore
     private List<Notes> notes;
 
-    @OneToOne(mappedBy = "degree", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "degree", cascade = CascadeType.ALL )
     @JsonIgnore
     private DocumentTable document;
 
