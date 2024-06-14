@@ -19,7 +19,7 @@ public interface ConfigTableRepo extends JpaRepository<ConfigTable,Long> {
     @Query("SELECT c FROM ConfigTable c WHERE c.masterType.id = :masterTypeId AND c.value = :value")
     Optional<ConfigTable> findByMasterTypeIdAndValue(@Param("masterTypeId") Long masterTypeId, @Param("value") String value);
 
-    List<ConfigDTO> getConfigTablesByMasterTypeId(Long masterTypeId);
+
 
 
 }

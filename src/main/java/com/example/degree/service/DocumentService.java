@@ -78,27 +78,38 @@ public class DocumentService {
             throw new ResourceNotFoundException("Document not found with degreeId: " + degreeId);
         }
     }
+
+
     public DocumentTable updateDocument(Long degreeId, String docName, MultipartFile documentImage, Long masterId, String value, LocalDate receiveDate) throws IOException, ResourceNotFoundException {
         // Retrieve the document by degreeId
         DocumentTable document = documentTableRepository.findByDegreeId(degreeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found for degreeId: " + degreeId));
 
-        // Update the document properties
-        document.setDocName(docName);
-        document.setDocumentImage(documentImage.getBytes());
-        document.setReceivedDate(receiveDate);
+        // Update the document properties only if new values are provided
+        if (docName != null) {
+            document.setDocName(docName);
+        }
+        if (documentImage != null) {
+            document.setDocumentImage(documentImage.getBytes());
+        }
+        if (receiveDate != null) {
+            document.setReceivedDate(receiveDate);
+        }
 
         // Find the ConfigTable based on masterId and value
-        Optional<ConfigTable> configTable = configTableRepository.findByMasterType_IdAndValue(masterId, value);
-        if (configTable.isPresent()) {
-            document.setConfigTable(configTable.get());
-        } else {
-            throw new ResourceNotFoundException("ConfigTable not found for masterId: " + masterId + " and value: " + value);
+        if (masterId != null && value != null) {
+            Optional<ConfigTable> configTable = configTableRepository.findByMasterType_IdAndValue(masterId, value);
+            if (configTable.isPresent()) {
+                document.setConfigTable(configTable.get());
+            } else {
+                throw new ResourceNotFoundException("ConfigTable not found for masterId: " + masterId + " and value: " + value);
+            }
         }
 
         // Save and return the updated document
         return documentTableRepository.save(document);
     }
+
 
 
 }

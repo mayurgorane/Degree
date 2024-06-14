@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/degreeId/{degreeId}/notes")
@@ -32,26 +30,30 @@ public class NotesController {
         List<Notes> savedNotes = new ArrayList<>();
         for (Notes note : notes) {
             Long groupId = note.getGroupId();
-            if (groupId == null) {
-                // Generate new groupId and set version to 1 if groupId is not present
-                groupId = notesRepository.findMaxGroupIdByDegree(degreeId).orElse(0L) + 1;
-                note.setVersion(1L);
-            } else {
-                // Increment the version if groupId is present
+            Long version = note.getVersion();
+
+            if (version != null && groupId != null) {
+                // Delete the note if version and groupId are provided
+                notesRepository.deleteByGroupIdAndVersion(degreeId, groupId, version);
+            } else if (groupId != null) {
+                // Add a new note with an incremented version if groupId is provided
                 List<Notes> existingNotes = notesRepository.findTopByGroupIdAndDegreeDegreeIdOrderByVersionDesc(groupId, degreeId, PageRequest.of(0, 1));
                 Notes existingNote = existingNotes.isEmpty() ? null : existingNotes.get(0);
                 if (existingNote != null) {
                     note.setVersion(existingNote.getVersion() + 1);
-                    note.setDegree(existingNote.getDegree());
                 } else {
-                    // Handle the case where the groupId is not found
                     note.setVersion(1L);
                 }
+                note.setDegree(degree.get());
+                savedNotes.add(notesRepository.save(note));
+            } else {
+                // Add a new note with a new groupId and version 1 if only note is provided
+                groupId = notesRepository.findMaxGroupIdByDegree(degreeId).orElse(0L) + 1;
+                note.setGroupId(groupId);
+                note.setVersion(1L);
+                note.setDegree(degree.get());
+                savedNotes.add(notesRepository.save(note));
             }
-
-            note.setDegree(degree.get());
-            note.setGroupId(groupId);
-            savedNotes.add(notesRepository.save(note));
         }
 
         return savedNotes;
@@ -72,5 +74,24 @@ public class NotesController {
     @GetMapping("/groupId/{groupId}")
     public List<Notes> getNotesByGroupId(@PathVariable Long degreeId, @PathVariable Long groupId) {
         return notesRepository.findByGroupIdAndDegreeId(groupId, degreeId);
+    }
+
+
+    @GetMapping("/highestVersion")
+    public List<Notes> getNotesWithHighestVersionByDegreeId(@PathVariable Long degreeId) {
+        List<Notes> notes = notesRepository.findByDegreeId(degreeId);
+        if (notes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Long, Notes> highestVersionNotes = new HashMap<>();
+        for (Notes note : notes) {
+            Long groupId = note.getGroupId();
+            if (!highestVersionNotes.containsKey(groupId) || highestVersionNotes.get(groupId).getVersion() < note.getVersion()) {
+                highestVersionNotes.put(groupId, note);
+            }
+        }
+
+        return new ArrayList<>(highestVersionNotes.values());
     }
 }

@@ -8,7 +8,7 @@ public class Notes {
     private Long noteId;
 
     @ManyToOne
-    @JoinColumn(name = "degree_id")
+    @JoinColumn(name = "degree_id", referencedColumnName = "degreeId")
     private Degree degree;
 
     private String note;
@@ -16,6 +16,8 @@ public class Notes {
     private Long version;
 
     private Long groupId;
+
+
 
     public Long getNoteId() {
         return noteId;
