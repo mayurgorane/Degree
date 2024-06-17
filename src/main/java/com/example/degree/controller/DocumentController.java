@@ -23,8 +23,10 @@ import java.time.LocalDate;
 @RequestMapping("/api/documents")
 public class DocumentController {
 
+
     @Autowired
     private DocumentService documentService;
+
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/upload")
     public ResponseEntity<DocumentTable> uploadDocument(
@@ -33,9 +35,12 @@ public class DocumentController {
             @RequestParam("masterTypeId") Long masterTypeId,
             @RequestParam("configValue") String configValue,
             @RequestParam("degreeId") Long degreeId,
-            @RequestParam("receiveDate") LocalDate receiveDate)   {
+            @RequestParam("receiveDate") LocalDate receiveDate) {
         try {
-            DocumentTable document = documentService.saveDocument(docName, documentImage, masterTypeId, configValue, degreeId,receiveDate);
+            // Extract file extension from the uploaded file
+            String fileExtension = getFileExtension(documentImage.getOriginalFilename());
+
+            DocumentTable document = documentService.saveDocument(docName, documentImage, masterTypeId, configValue, degreeId, receiveDate, fileExtension);
             return new ResponseEntity<>(document, HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -55,7 +60,13 @@ public class DocumentController {
             // Set the headers for the response
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(contentType));
-            headers.setContentDispositionFormData("filename", "document." + getFileExtension(document.getDocName()));
+
+            // Use documentNameExtension if available, otherwise use the file extension
+            String fileName = document.getDocumentNameExtension() != null ?
+                    "document." + document.getDocumentNameExtension() :
+                    "document." + getFileExtension(document.getDocName());
+
+            headers.setContentDispositionFormData("filename", fileName);
 
             return ResponseEntity.ok()
                     .headers(headers)
@@ -64,14 +75,32 @@ public class DocumentController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
-   @GetMapping("/degree/{degreeId}")
-    public ResponseEntity<DocumentTable> getDocumentDetailsByDegreeId(@PathVariable Long degreeId) {
+
+    @CrossOrigin(origins = "http://localhost:4200")
+    @PutMapping("/{degreeId}/update")
+    public ResponseEntity<DocumentTable> updateDocument(
+            @PathVariable Long degreeId,
+            @RequestParam(value = "docName", required = false) String docName,
+            @RequestParam(value = "documentImage", required = false) MultipartFile documentImage,
+            @RequestParam(value = "masterId", required = false) Long masterId,
+            @RequestParam(value = "value", required = false) String value,
+            @RequestParam(value = "receiveDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate receiveDate) {
         try {
-            DocumentTable document = documentService.getDocumentDetailsByDegreeId(degreeId);
-            return new ResponseEntity<>(document, HttpStatus.OK);
+            // Extract file extension from the uploaded file
+            String fileExtension = (documentImage != null) ? getFileExtension(documentImage.getOriginalFilename()) : null;
+
+            DocumentTable updatedDocument = documentService.updateDocument(degreeId, docName, documentImage, masterId, value, receiveDate, fileExtension);
+            return new ResponseEntity<>(updatedDocument, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
+    }
+
+    private String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
     }
 
     private String determineContentType(String fileName) {
@@ -88,29 +117,19 @@ public class DocumentController {
                 return "application/octet-stream";
         }
     }
-
-    private String getFileExtension(String fileName) {
-        int dotIndex = fileName.lastIndexOf('.');
-        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
-    }
-
-    @CrossOrigin(origins = "http://localhost:4200")
-    @PutMapping("/{degreeId}/update")
-    public ResponseEntity<DocumentTable> updateDocument(
-            @PathVariable Long degreeId,
-            @RequestParam(value = "docName", required = false) String docName,
-            @RequestParam(value = "documentImage", required = false) MultipartFile documentImage,
-            @RequestParam(value = "masterId", required = false) Long masterId,
-            @RequestParam(value = "value", required = false) String value,
-            @RequestParam(value = "receiveDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate receiveDate) {
+    @GetMapping("/degree/{degreeId}")
+    public ResponseEntity<DocumentTable> getDocumentDetailsByDegreeId(@PathVariable Long degreeId) {
         try {
-            DocumentTable updatedDocument = documentService.updateDocument(degreeId, docName, documentImage, masterId, value, receiveDate);
-            return new ResponseEntity<>(updatedDocument, HttpStatus.OK);
-        } catch (IOException e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            DocumentTable document = documentService.getDocumentDetailsByDegreeId(degreeId);
+            return new ResponseEntity<>(document, HttpStatus.OK);
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
+
+
+
+
+
 
     }

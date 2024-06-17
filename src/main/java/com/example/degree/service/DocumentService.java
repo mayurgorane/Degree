@@ -21,6 +21,7 @@ import java.util.Optional;
 @Service
 public class DocumentService {
 
+
     @Autowired
     private DocumentRepo documentTableRepository;
 
@@ -33,7 +34,8 @@ public class DocumentService {
     @Autowired
     private DegreeRepo degreeRepository;
 
-    public DocumentTable saveDocument(String docName, MultipartFile documentImage, Long masterTypeId, String configValue, Long degreeId,LocalDate receiveDate) throws IOException {
+
+    public DocumentTable saveDocument(String docName, MultipartFile documentImage, Long masterTypeId, String configValue, Long degreeId, LocalDate receiveDate, String fileExtension) throws IOException {
         Degree degree = degreeRepository.findById(degreeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Degree not found"));
 
@@ -46,13 +48,11 @@ public class DocumentService {
         ConfigTable config = configTableRepository.findByMasterTypeIdAndValue(masterTypeId, configValue)
                 .orElseThrow(() -> new ResourceNotFoundException("Config not found"));
 
-       
-        String fileExtension = getFileExtension(documentImage.getOriginalFilename());
-
         DocumentTable documentTable = new DocumentTable();
         documentTable.setCreatedBy(user.getUserName()); // Auto-fill userName
         documentTable.setCreatedDate(LocalDate.now());
-        documentTable.setDocName(docName + "." + fileExtension); // Append the file extension to the docName
+        documentTable.setDocName(docName); // Store the document name without extension
+        documentTable.setDocumentNameExtension(fileExtension); // Store the file extension
         documentTable.setDocumentImage(documentImage.getBytes());
         documentTable.setConfigTable(config);
         documentTable.setDegree(degree);
@@ -65,6 +65,7 @@ public class DocumentService {
         int dotIndex = fileName.lastIndexOf('.');
         return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
     }
+
     public DocumentTable getDocumentById(Long documentId) {
         return documentTableRepository.findById(documentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found with id: " + documentId));
@@ -80,7 +81,7 @@ public class DocumentService {
     }
 
 
-    public DocumentTable updateDocument(Long degreeId, String docName, MultipartFile documentImage, Long masterId, String value, LocalDate receiveDate) throws IOException, ResourceNotFoundException {
+    public DocumentTable updateDocument(Long degreeId, String docName, MultipartFile documentImage, Long masterId, String value, LocalDate receiveDate, String fileExtension) throws IOException, ResourceNotFoundException {
         // Retrieve the document by degreeId
         DocumentTable document = documentTableRepository.findByDegreeId(degreeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Document not found for degreeId: " + degreeId));
@@ -94,6 +95,9 @@ public class DocumentService {
         }
         if (receiveDate != null) {
             document.setReceivedDate(receiveDate);
+        }
+        if (fileExtension != null) {
+            document.setDocumentNameExtension(fileExtension);
         }
 
         // Find the ConfigTable based on masterId and value
@@ -109,7 +113,6 @@ public class DocumentService {
         // Save and return the updated document
         return documentTableRepository.save(document);
     }
-
 
 
 }

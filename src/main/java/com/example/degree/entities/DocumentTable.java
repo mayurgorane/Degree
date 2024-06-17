@@ -30,6 +30,17 @@ public class DocumentTable {
 
     private LocalDate receivedDate;
 
+    @Column(name = "document_name_extension")
+    private String documentNameExtension;
+
+    public String getDocumentNameExtension() {
+        return documentNameExtension;
+    }
+
+    public void setDocumentNameExtension(String documentNameExtension) {
+        this.documentNameExtension = documentNameExtension;
+    }
+
     public String getCreatedBy() {
         return createdBy;
     }
