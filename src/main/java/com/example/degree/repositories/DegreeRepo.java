@@ -12,4 +12,5 @@ import java.util.List;
 public interface DegreeRepo extends JpaRepository<Degree,Long> {
     @Query("SELECT d FROM Degree d WHERE d.user.id = :userId")
     List<Degree> findByUserId(@Param("userId") Long userId);
+
 }
