@@ -1,6 +1,9 @@
 package com.example.degree.entities;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
+
 @Entity
 public class Notes {
     @Id
@@ -11,13 +14,23 @@ public class Notes {
     @JoinColumn(name = "degree_id", referencedColumnName = "degreeId")
     private Degree degree;
 
+    @Lob
+    @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
     private Long version;
 
     private Long groupId;
 
+    private LocalDate createdNotesDate;
 
+    public LocalDate getCreatedNotesDate() {
+        return createdNotesDate;
+    }
+
+    public void setCreatedNotesDate(LocalDate createdNotesDate) {
+        this.createdNotesDate = createdNotesDate;
+    }
 
     public Long getNoteId() {
         return noteId;

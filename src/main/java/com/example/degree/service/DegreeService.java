@@ -7,6 +7,9 @@ import com.example.degree.repositories.DegreeRepo;
 import com.example.degree.repositories.UsersRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 
 import java.time.LocalDate;
 import java.util.List;
@@ -79,7 +82,11 @@ public class DegreeService {
         return degreeRepository.findById(id);
     }
 
-    public List<Degree> getDegreesByUserId(Long userId) {
+    public Page<Degree> getDegreesByUserId(Long userId, Pageable pageable) {
+        return degreeRepository.findByUserId(userId, pageable);
+    }
+
+    public List<Degree> getAllDegreesByUserId(Long userId) {
         return degreeRepository.findByUserId(userId);
     }
 

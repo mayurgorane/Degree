@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.PageRequest;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -45,12 +46,14 @@ public class NotesController {
                     note.setVersion(1L);
                 }
                 note.setDegree(degree.get());
+                note.setCreatedNotesDate(LocalDate.now());
                 savedNotes.add(notesRepository.save(note));
             } else {
                 // Add a new note with a new groupId and version 1 if only note is provided
                 groupId = notesRepository.findMaxGroupIdByDegree(degreeId).orElse(0L) + 1;
                 note.setGroupId(groupId);
                 note.setVersion(1L);
+                note.setCreatedNotesDate(LocalDate.now());
                 note.setDegree(degree.get());
                 savedNotes.add(notesRepository.save(note));
             }
