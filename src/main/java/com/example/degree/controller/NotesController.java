@@ -80,6 +80,7 @@ public class NotesController {
     }
 
 
+
     @GetMapping("/highestVersion")
     public List<Notes> getNotesWithHighestVersionByDegreeId(@PathVariable Long degreeId) {
         List<Notes> notes = notesRepository.findByDegreeId(degreeId);
@@ -96,5 +97,11 @@ public class NotesController {
         }
 
         return new ArrayList<>(highestVersionNotes.values());
+    }
+
+    @GetMapping("/groupId/{groupId}/versionId/{versionId}")
+    public Notes getNotesByGroupIdAndVersionId(@PathVariable Long degreeId, @PathVariable Long groupId, @PathVariable Long versionId) {
+        Long previousVersionId = versionId - 1;
+        return notesRepository.findByGroupIdAndVersionAndDegreeId(groupId, previousVersionId, degreeId);
     }
 }

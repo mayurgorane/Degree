@@ -45,4 +45,8 @@ public interface NotesRepo extends JpaRepository<Notes, Long> {
     @Transactional
     @Query("DELETE FROM Notes n WHERE n.degree.id = :degreeId AND n.groupId = :groupId AND n.version = :version")
     void deleteByGroupIdAndVersion(@Param("degreeId") Long degreeId, @Param("groupId") Long groupId, @Param("version") Long version);
+
+
+    @Query("SELECT n FROM Notes n WHERE n.groupId = :groupId AND n.version = :versionId AND n.degree.id = :degreeId")
+    Notes findByGroupIdAndVersionAndDegreeId(Long groupId, Long versionId, Long degreeId);
 }

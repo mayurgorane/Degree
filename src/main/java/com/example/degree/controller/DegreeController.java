@@ -57,6 +57,7 @@ public class DegreeController {
         List<Degree> degrees = degreeService.getAllDegrees();
         return ResponseEntity.ok(degrees);
     }
+
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/{id}")
     public ResponseEntity<Degree> getDegreeById(@PathVariable Long id) {
