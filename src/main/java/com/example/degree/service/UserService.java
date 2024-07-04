@@ -1,5 +1,6 @@
 package com.example.degree.service;
 
+import com.example.degree.entities.UserGroups;
 import com.example.degree.entities.Users;
 import com.example.degree.repositories.UsersRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,4 +48,7 @@ public class UserService implements UserDetailsService {
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }
+
+
+
 }

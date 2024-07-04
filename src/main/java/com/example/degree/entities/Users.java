@@ -21,11 +21,20 @@ public class Users {
     private Set<Degree> degrees = new HashSet<>();
 
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserGroups> userGroups = new HashSet<>();
+
     private String email;
     private String roles;
     private String password;
 
+    public Set<UserGroups> getUserGroups() {
+        return userGroups;
+    }
 
+    public void setUserGroups(Set<UserGroups> userGroups) {
+        this.userGroups = userGroups;
+    }
 
     public String getEmail() {
         return email;
